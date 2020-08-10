@@ -1,58 +1,59 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jul 21 16:57:01 2020
+Created on Fri Aug  7 18:27:07 2020
 
 @author: Chintan Munjani
 """
 
-
 from flask import Flask,render_template,url_for,request
-import pandas as pd 
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import PassiveAggressiveClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
 import pickle
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-	return render_template('home.html')
+    return render_template('home.html')
 
-@app.route('/predict',methods=['POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
- 	# df= pd.read_csv("spam.csv", encoding="latin-1")
- 	# df.drop(['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4'], axis=1, inplace=True)
- 	# # Features and Labels
- 	# df['label'] = df['class'].map({'ham': 0, 'spam': 1})
- 	# X = df['message']
- 	# y = df['label']
+    # # Read the data
+    # df = pd.read_csv('news.csv')
+    # df.drop(['Unnamed: 0', 'title'], axis=1, inplace=True)
+    # df['label'] = df['label'].map({'FAKE': 1, 'REAL': 0})
+    # labels = df.label
     
+    # x_train,x_test,y_train,y_test=train_test_split(df['text'], labels, test_size=0.2, random_state=7)
     
-  #   # Extract Feature With CountVectorizer
- 	# cv = CountVectorizer()
- 	# X = cv.fit_transform(X)
- 	# from sklearn.model_selection import train_test_split
- 	# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
- 	# #Naive Bayes Classifier
- 	
-
- 	# clf = MultinomialNB()
- 	# clf.fit(X_train,y_train)
- 	# clf.score(X_test,y_test)
-	with open('transform', 'rb') as f:
-		cv = pickle.load(f)
-	with open('nlp_model', 'rb') as file:
-		pac = pickle.load(file)
-
-	if request.method == 'POST':
-		message = request.form['message']
-		data = [message]
-		vect = cv.transform(data).toarray()
-		my_prediction = pac.predict(vect)
-	return render_template('result.html',prediction = my_prediction)
-
-
+    # tfidf_vectorizer=TfidfVectorizer(stop_words='english', max_df=0.7)
+    
+    # tfidf_train=tfidf_vectorizer.fit_transform(x_train)
+    
+    # pac=PassiveAggressiveClassifier(max_iter=50)
+    # pac.fit(tfidf_train,y_train)
+    
+    # with open('transform', 'wb') as f:
+    #     pickle.dump(tfidf_vectorizer, f)
+    # with open('nlp_model', 'wb') as file:
+    #     pickle.dump(pac, file)
+    
+    with open('transform', 'rb') as f:
+        tfidf = pickle.load(f)
+    with open('nlp_model', 'rb') as file:
+        pac1 = pickle.load(file)
+        
+    if request.method == 'POST':
+        message = request.form['message']
+        data = [message]
+        vect = tfidf.transform(data).toarray()
+        my_prediction = pac1.predict(vect)
+    return render_template('result.html',prediction = my_prediction)
 
 if __name__ == '__main__':
 	app.run(debug=False)
+
+    
